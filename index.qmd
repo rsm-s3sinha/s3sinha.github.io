@@ -1,0 +1,18 @@
+---
+title: "Shefali Sinha"
+image: "files/profile_pic.jpg"
+
+about: 
+  template: jolla
+  links:
+    - icon: envelope
+      href: mailto:s3sinha@ucsd.edu
+    - icon: linkedin
+      href: https://www.linkedin.com/in/sinhashefali15/
+---
+
+Hello,
+
+My name is Shefali and I am a graduate student at Rady School of Management.
+
+To learn more about Quarto websites visit <https://quarto.org/docs/websites>.

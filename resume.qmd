@@ -1,0 +1,6 @@
+---
+title: "Shefali Sinha's Resume"
+---
+
+
+{{< pdf files/Shefali_Sinha.pdf width=100% height=800 >}}
