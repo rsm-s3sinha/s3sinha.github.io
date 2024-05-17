@@ -233,7 +233,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <section id="yogurt-dataset" class="level3">
 <h3 class="anchored" data-anchor-id="yogurt-dataset">Yogurt Dataset</h3>
 <p>We will use the <code>yogurt_data</code> dataset, which provides anonymized consumer identifiers (<code>id</code>), a vector indicating the chosen product (<code>y1</code>:<code>y4</code>), a vector indicating if any products were “featured” in the store as a form of advertising (<code>f1</code>:<code>f4</code>), and the products’ prices (<code>p1</code>:<code>p4</code>). For example, consumer 1 purchased yogurt 4 at a price of 0.079/oz and none of the yogurts were featured/advertised at the time of consumer 1’s purchase. Consumers 2 through 7 each bought yogurt 2, etc.</p>
-<div id="c6b79535" class="cell" data-execution_count="1">
+<div id="82c98aad" class="cell" data-execution_count="1">
 <div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> pandas <span class="im">as</span> pd</span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Load the yogurt data</span></span>
@@ -291,7 +291,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <p><span class="math display">\[ x_j' = [\mathbbm{1}(\text{Yogurt 1}), \mathbbm{1}(\text{Yogurt 2}), \mathbbm{1}(\text{Yogurt 3}), X_f, X_p] \]</span></p>
 <p>The “hard part” of the MNL likelihood function is organizing the data, as we need to keep track of 3 dimensions (consumer <span class="math inline">\(i\)</span>, covariate <span class="math inline">\(k\)</span>, and product <span class="math inline">\(j\)</span>) instead of the typical 2 dimensions for cross-sectional regression models (consumer <span class="math inline">\(i\)</span> and covariate <span class="math inline">\(k\)</span>).</p>
 <p>What we would like to do is reorganize the data from a “wide” shape with <span class="math inline">\(n\)</span> rows and multiple columns for each covariate, to a “long” shape with <span class="math inline">\(n \times J\)</span> rows and a single column for each covariate. As part of this re-organization, we’ll add binary variables to indicate the first 3 products; the variables for featured and price are included in the dataset and simply need to be “pivoted” or “melted” from wide to long.</p>
-<div id="1fd89296" class="cell" data-execution_count="2">
+<div id="b7aa8128" class="cell" data-execution_count="2">
 <div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Reshaping data using melt for a more controlled transformation</span></span>
 <span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="co"># Create a list of columns to keep as identifiers</span></span>
 <span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>id_vars <span class="op">=</span> [<span class="st">'id'</span>]</span>
@@ -402,11 +402,16 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </div>
 </div>
 <p>The data has been successfully reshaped to a “long” format suitable for the multinomial logit model estimation. Each row now represents a specific product option for each consumer, structured as follows:</p>
-<p><strong>id:</strong> Anonymized consumer identifier. <strong>product:</strong> Product number (1 through 4, with 4 being the base category for dummy variables). <strong>choice:</strong> Binary indicator if the product was chosen (1) or not (0). <strong>featured:</strong> Binary indicator if the product was featured as a form of advertising. <strong>price:</strong> Price of the product. <strong>Brand_1, Brand_2, Brand_3:</strong> Dummy variables indicating whether the product is Yogurt 1, 2, or 3, respectively.</p>
+<p><strong>id:</strong> Anonymized consumer identifier.</p>
+<p><strong>product:</strong> Product number (1 through 4, with 4 being the base category for dummy variables).</p>
+<p><strong>choice:</strong> Binary indicator if the product was chosen (1) or not (0).</p>
+<p><strong>featured:</strong> Binary indicator if the product was featured as a form of advertising.</p>
+<p><strong>price:</strong> Price of the product.</p>
+<p><strong>Brand_1, Brand_2, Brand_3:</strong> Dummy variables indicating whether the product is Yogurt 1, 2, or 3, respectively.</p>
 </section>
 <section id="estimation" class="level3">
 <h3 class="anchored" data-anchor-id="estimation">Estimation</h3>
-<div id="1f5670fc" class="cell" data-execution_count="3">
+<div id="1208bf63" class="cell" data-execution_count="3">
 <div class="sourceCode cell-code" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
 <span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> scipy.special <span class="im">import</span> logsumexp</span>
 <span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a></span>
@@ -441,7 +446,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb4-32"><a href="#cb4-32" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Return the negative log-likelihood for minimization</span></span>
 <span id="cb4-33"><a href="#cb4-33" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> <span class="op">-</span>log_likelihood</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<div id="243fc514" class="cell" data-execution_count="4">
+<div id="539e72b5" class="cell" data-execution_count="4">
 <div class="sourceCode cell-code" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
 <span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> scipy.optimize <span class="im">import</span> minimize</span>
 <span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> scipy.special <span class="im">import</span> logsumexp</span>
@@ -517,7 +522,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <p>Now, using the price coefficient as a conversion factor, the dollar benefit per ounce is calculated as:</p>
 <p>[ = = ]</p>
 <p>Let’s compute this value to find out the monetary measure of brand value per ounce.</p>
-<div id="a4359e84" class="cell" data-execution_count="5">
+<div id="04891322" class="cell" data-execution_count="5">
 <div class="sourceCode cell-code" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Calculate the dollar benefit per ounce between the most preferred and least preferred yogurt</span></span>
 <span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>utility_difference <span class="op">=</span> <span class="fl">19.69</span></span>
 <span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>price_coefficient <span class="op">=</span> <span class="op">-</span><span class="fl">8.46</span>  <span class="co"># Negative because it's a cost</span></span>
@@ -533,7 +538,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <p><em>Calculate Current Market Shares:</em> We’ll compute the probabilities of choosing each of the four yogurts using the estimated model coefficients and the original data. We then average these probabilities across all consumers to get the market shares.</p>
 <p><em>Simulate the Price Increase:</em> We’ll adjust the price of yogurt 1 by adding $0.10 to its current price and then re-calculate the choice probabilities. We’ll average these new probabilities to see the impact on market shares, particularly focusing on whether the share of yogurt 1 decreases.</p>
 <p>First, let’s compute the current market shares using the estimated coefficients.</p>
-<div id="ee286e4e" class="cell" data-execution_count="6">
+<div id="d8eda48b" class="cell" data-execution_count="6">
 <div class="sourceCode cell-code" id="cb9"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Retrieve the optimized beta parameters</span></span>
 <span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>beta_opt <span class="op">=</span> result.x</span>
 <span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a></span>
@@ -566,7 +571,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <p>Yogurt 1: 24.99% Yogurt 2: 24.92% Yogurt 3: 25.11% Yogurt 4: 24.98%</p>
 <p>These shares are quite balanced across the products, likely due to the simulated nature of the dataset or the equalization of other effects through the utility calculations.</p>
 <p>Next, we’ll simulate the effect of increasing the price of yogurt 1 by $0.10 per ounce and calculate the new expected market shares.</p>
-<div id="d81661d3" class="cell" data-execution_count="7">
+<div id="3ac58d24" class="cell" data-execution_count="7">
 <div class="sourceCode cell-code" id="cb11"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Increase the price of yogurt 1 by $0.10 and calculate new probabilities</span></span>
 <span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>yogurt_long_adjusted <span class="op">=</span> yogurt_long.copy()</span>
 <span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>yogurt_long_adjusted.loc[yogurt_long_adjusted[<span class="st">'product'</span>] <span class="op">==</span> <span class="dv">1</span>, <span class="st">'price'</span>] <span class="op">+=</span> <span class="fl">0.10</span></span>
@@ -587,7 +592,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <h2 class="anchored" data-anchor-id="estimating-minivan-preferences">2. Estimating Minivan Preferences</h2>
 <section id="data" class="level3">
 <h3 class="anchored" data-anchor-id="data">Data</h3>
-<div id="bc7b51f9" class="cell" data-execution_count="8">
+<div id="cfd60b58" class="cell" data-execution_count="8">
 <div class="sourceCode cell-code" id="cb13"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Load the new conjoint survey data to describe it</span></span>
 <span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>conjoint_data <span class="op">=</span> pd.read_csv(<span class="st">'../../files/rintro-chapter13conjoint.csv'</span>)</span>
 <span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a></span>
@@ -680,8 +685,16 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </div>
 </div>
 <p>The dataset from the conjoint survey appears to include the following columns:</p>
-<p>resp.id: Identifier for the respondent. ques: Question or choice task number. alt: Alternative number within each choice task. carpool: Whether carpooling was considered. seat: Number of seats in the vehicle (6, 7, or 8 seats). cargo: Cargo space in the vehicle (2ft or 3ft). eng: Engine type (gas, hybrid, or electric). price: Price of the vehicle in thousands of dollars. choice: Indicates whether the respondent chose this alternative (1 if chosen, 0 otherwise).</p>
-<div id="e65f05d6" class="cell" data-execution_count="9">
+<p>resp.id: Identifier for the respondent.</p>
+<p>ques: Question or choice task number.</p>
+<p>alt: Alternative number within each choice task.</p>
+<p>carpool: Whether carpooling was considered.</p>
+<p>seat: Number of seats in the vehicle (6, 7, or 8 seats).</p>
+<p>cargo: Cargo space in the vehicle (2ft or 3ft).</p>
+<p>eng: Engine type (gas, hybrid, or electric).</p>
+<p>price: Price of the vehicle in thousands of dollars.</p>
+<p>choice: Indicates whether the respondent chose this alternative (1 if chosen, 0 otherwise).</p>
+<div id="187c9442" class="cell" data-execution_count="9">
 <div class="sourceCode cell-code" id="cb14"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Calculate the total number of respondents</span></span>
 <span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>total_respondents <span class="op">=</span> conjoint_data[<span class="st">'resp.id'</span>].nunique()</span>
 <span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a></span>
@@ -733,7 +746,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </section>
 <section id="model" class="level3">
 <h3 class="anchored" data-anchor-id="model">Model</h3>
-<div id="81ee6fc5" class="cell" data-execution_count="10">
+<div id="e406fa34" class="cell" data-execution_count="10">
 <div class="sourceCode cell-code" id="cb16"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> statsmodels.api <span class="im">as</span> sm</span>
 <span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> statsmodels.formula.api <span class="im">as</span> smf</span>
 <span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a></span>
@@ -787,7 +800,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </tr>
 <tr class="odd">
 <td data-quarto-table-cell-role="th">Time:</td>
-<td>20:10:14</td>
+<td>20:17:55</td>
 <td data-quarto-table-cell-role="th">Log-Likelihood:</td>
 <td>-5358.4</td>
 </tr>
@@ -993,7 +1006,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </tr>
 </tbody>
 </table>
-<div id="565a71e3" class="cell" data-execution_count="11">
+<div id="a62cfe0b" class="cell" data-execution_count="11">
 <div class="sourceCode cell-code" id="cb18"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Attributes matrix for the minivans</span></span>
 <span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a>minivans <span class="op">=</span> np.array([</span>
 <span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a>    [<span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">30</span>],  <span class="co"># Minivan A: 7 seats, 2ft cargo, Hybrid, $30k</span></span>

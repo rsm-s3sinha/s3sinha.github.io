@@ -126,10 +126,15 @@ yogurt_long.head()
 The data has been successfully reshaped to a "long" format suitable for the multinomial logit model estimation. Each row now represents a specific product option for each consumer, structured as follows:
 
 **id:** Anonymized consumer identifier.
+
 **product:** Product number (1 through 4, with 4 being the base category for dummy variables).
+
 **choice:** Binary indicator if the product was chosen (1) or not (0).
+
 **featured:** Binary indicator if the product was featured as a form of advertising.
+
 **price:** Price of the product.
+
 **Brand_1, Brand_2, Brand_3:** Dummy variables indicating whether the product is Yogurt 1, 2, or 3, respectively.
 
 
@@ -340,13 +345,21 @@ conjoint_data.head()
 The dataset from the conjoint survey appears to include the following columns:
 
 resp.id: Identifier for the respondent.
+
 ques: Question or choice task number.
+
 alt: Alternative number within each choice task.
+
 carpool: Whether carpooling was considered.
+
 seat: Number of seats in the vehicle (6, 7, or 8 seats).
+
 cargo: Cargo space in the vehicle (2ft or 3ft).
+
 eng: Engine type (gas, hybrid, or electric).
+
 price: Price of the vehicle in thousands of dollars.
+
 choice: Indicates whether the respondent chose this alternative (1 if chosen, 0 otherwise).
 
 
