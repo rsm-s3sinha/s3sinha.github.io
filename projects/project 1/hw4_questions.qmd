@@ -1,0 +1,197 @@
+---
+title: "Key Drivers Analysis"
+author: "Shefali Sinha"
+date: today
+---
+
+
+This post implements a few measure of variable importance, interpreted as a key drivers analysis, for certain aspects of a payment card on customer satisfaction with that payment card.
+
+```{python}
+import pandas as pd
+
+# Load the dataset
+data_path = '../../files/data_for_drivers_analysis.csv'
+data = pd.read_csv(data_path)
+
+# Display the first few rows of the dataframe to inspect the columns
+data.head(), data.columns
+```
+
+The dataset contains the following columns that map to the perceptions identified on the slide:
+
+**trust:** Is offered by a brand I trust
+
+**build:** Helps build credit quickly
+
+**differs:** Is different from other cards
+
+**easy:** Is easy to use
+
+**appealing:** Has appealing benefits or rewards
+
+**rewarding:** Rewards me for responsible usage
+
+**popular:** Is used by a lot of people
+
+**service:** Provides outstanding customer service
+
+**impact:** Makes a difference in my life
+
+### Pearson Correlations
+
+```{python}
+from scipy.stats import pearsonr
+
+# Define the perception variables
+perception_variables = ['trust', 'build', 'differs', 'easy', 'appealing', 'rewarding', 'popular', 'service', 'impact']
+
+# Calculate Pearson correlations for each perception with the satisfaction variable
+pearson_correlations = {var: pearsonr(data[var], data['satisfaction'])[0] for var in perception_variables}
+pearson_correlations
+
+```
+
+The Pearson correlations between each perception and overall satisfaction are as follows:
+
+- Is offered by a brand I trust: 0.256
+- Helps build credit quickly: 0.192
+- Is different from other cards: 0.185
+- Is easy to use: 0.213
+- Has appealing benefits or rewards: 0.208
+- Rewards me for responsible usage: 0.195
+- Is used by a lot of people: 0.171
+- Provides outstanding customer service: 0.251
+- Makes a difference in my life: 0.255
+
+### Linear Regression
+To determine the standardized multiple regression coefficients for each variable
+
+```{python}
+from sklearn.linear_model import LinearRegression
+from sklearn.preprocessing import StandardScaler
+
+# Standardize the variables
+scaler = StandardScaler()
+X = scaler.fit_transform(data[perception_variables])
+y = scaler.fit_transform(data[['satisfaction']].values.ravel().reshape(-1, 1)).ravel()
+
+# Fit a linear regression model
+model = LinearRegression()
+model.fit(X, y)
+
+# Get the standardized coefficients (beta values)
+standardized_coefficients = dict(zip(perception_variables, model.coef_))
+standardized_coefficients
+
+```
+
+The standardized multiple regression coefficients, which indicate the unique contribution of each perception to customer satisfaction while controlling for other perceptions, are as follows:
+
+- Is offered by a brand I trust: 0.116
+- Helps build credit quickly: 0.020
+- Is different from other cards: 0.028
+- Is easy to use: 0.022
+- Has appealing benefits or rewards: 0.034
+- Rewards me for responsible usage: 0.005
+- Is used by a lot of people: 0.017
+- Provides outstanding customer service: 0.088
+- Makes a difference in my life: 0.128
+
+### Johnson's Epsilon
+
+```{python}
+import numpy as np
+
+# Calculate R-squared of the full model
+full_model_r_squared = model.score(X, y)
+
+# Initialize dictionary to hold Johnson's Epsilon values
+johnsons_epsilon = {}
+
+# Calculate Johnson's Epsilon for each variable
+for i, var in enumerate(perception_variables):
+    # Exclude the current variable from the model
+    X_reduced = np.delete(X, i, axis=1)
+    
+    # Fit the reduced model
+    reduced_model = LinearRegression()
+    reduced_model.fit(X_reduced, y)
+    
+    # Calculate the R-squared of the reduced model
+    reduced_model_r_squared = reduced_model.score(X_reduced, y)
+    
+    # Johnson's Epsilon for the current variable
+    epsilon = full_model_r_squared - reduced_model_r_squared
+    johnsons_epsilon[var] = epsilon
+
+johnsons_epsilon
+
+```
+
+The Johnson's Epsilon values, which approximate the contribution of each variable to the model's \( R^2 \)
+when considered alongside other variables, are as follows:
+
+- Is offered by a brand I trust: 0.0082
+- Helps build credit quickly: 0.0003
+- Is different from other cards: 0.0006
+- Is easy to use: 0.0003
+- Has appealing benefits or rewards: 0.0007
+- Rewards me for responsible usage: 0.00002
+- Is used by a lot of people: 0.0002
+- Provides outstanding customer service: 0.0047
+- Makes a difference in my life: 0.0112
+
+### Mean Decrease in RF Gini Coefficient
+
+```{python}
+from sklearn.ensemble import RandomForestRegressor
+
+# Fit a random forest model
+rf_model = RandomForestRegressor(n_estimators=100)
+rf_model.fit(X, y)
+
+# Extract feature importance based on mean decrease in impurity
+rf_feature_importance = dict(zip(perception_variables, rf_model.feature_importances_))
+rf_feature_importance
+
+```
+
+The Mean Decrease in RF Gini Coefficient for each perception, derived from a Random Forest model, is as follows:
+
+- Is offered by a brand I trust: 15.5%
+- Helps build credit quickly: 10.0%
+- Is different from other cards: 9.2%
+- Is easy to use: 10.1%
+- Has appealing benefits or rewards: 8.3%
+- Rewards me for responsible usage: 10.1%
+- Is used by a lot of people: 9.8%
+- Provides outstanding customer service: 13.3%
+- Makes a difference in my life: 13.7%
+
+## Key Driver Analysis
+
+| **Perception**                          | **Pearson Correlations (%)** | **Standardized Regression Coefficients (%)** | **LMG / Shapley Values (Johnson's Epsilon) (%)** | **Mean Decrease in RF Gini Coefficient (%)** |
+|-----------------------------------------|-------------------------------|------------------------------------------------|--------------------------------------------------|-----------------------------------------------|
+| Is offered by a brand I trust           | 25.6                          | 11.6                                           | 0.82                                             | 15.5                                          |
+| Helps build credit quickly              | 19.2                          | 2.0                                            | 0.03                                             | 10.0                                          |
+| Is different from other cards           | 18.5                          | 2.8                                            | 0.06                                             | 9.2                                           |
+| Is easy to use                          | 21.3                          | 2.2                                            | 0.03                                             | 10.1                                          |
+| Has appealing benefits or rewards       | 20.8                          | 3.4                                            | 0.07                                             | 8.3                                           |
+| Rewards me for responsible usage        | 19.5                          | 0.5                                            | 0.002                                            | 10.1                                          |
+| Is used by a lot of people              | 17.1                          | 1.7                                            | 0.02                                             | 9.8                                           |
+| Provides outstanding customer service   | 25.1                          | 8.8                                            | 0.47                                             | 13.3                                          |
+| Makes a difference in my life           | 25.5                          | 12.8                                           | 1.12                                             | 13.7                                          |
+
+## Conclusion
+
+The analysis highlights that perceptions related to trust in the brand, the impact of the card on the user’s life, and outstanding customer service are most strongly associated with customer satisfaction.
+
+
+_If you want a challenge, either (1) implement one or more of the measures yourself. "Usefulness" is rather easy to program up. Shapley values for linear regression are a bit more work. Or (2) add additional measures to the table such as the importance scores from XGBoost._
+
+
+
+
+
+
