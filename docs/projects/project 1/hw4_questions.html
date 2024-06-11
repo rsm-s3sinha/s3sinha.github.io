@@ -6,7 +6,7 @@
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
-<meta name="author" content="Your Name">
+<meta name="author" content="Shefali Sinha">
 <meta name="dcterms.date" content="2024-05-30">
 
 <title>Shefali’s Website - Key Drivers Analysis</title>
@@ -156,7 +156,6 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <li><a href="#johnsons-epsilon" id="toc-johnsons-epsilon" class="nav-link" data-scroll-target="#johnsons-epsilon">Johnson’s Epsilon</a></li>
   <li><a href="#mean-decrease-in-rf-gini-coefficient" id="toc-mean-decrease-in-rf-gini-coefficient" class="nav-link" data-scroll-target="#mean-decrease-in-rf-gini-coefficient">Mean Decrease in RF Gini Coefficient</a></li>
   <li><a href="#key-driver-analysis" id="toc-key-driver-analysis" class="nav-link" data-scroll-target="#key-driver-analysis">Key Driver Analysis</a></li>
-  <li><a href="#conclusion" id="toc-conclusion" class="nav-link" data-scroll-target="#conclusion">Conclusion</a></li>
   </ul>
 </nav>
     </div>
@@ -175,7 +174,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     <div>
     <div class="quarto-title-meta-heading">Author</div>
     <div class="quarto-title-meta-contents">
-             <p>Your Name </p>
+             <p>Shefali Sinha </p>
           </div>
   </div>
     
@@ -195,8 +194,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 
 
 <p>This post implements a few measure of variable importance, interpreted as a key drivers analysis, for certain aspects of a payment card on customer satisfaction with that payment card.</p>
-<p><em>todo: replicate the table on slide 19 of the session 4 slides. This involves calculating pearson correlations, standardized regression coefficients, “usefulness”, Shapley values for a linear regression, Johnson’s relative weights, and the mean decrease in the gini coefficient from a random forest. You may use packages built into R or Python.</em></p>
-<div id="7cbed716" class="cell" data-execution_count="1">
+<div id="a9622a90" class="cell" data-execution_count="1">
 <div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> pandas <span class="im">as</span> pd</span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Load the dataset</span></span>
@@ -205,7 +203,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="co"># Display the first few rows of the dataframe to inspect the columns</span></span>
 <span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>data.head(), data.columns</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-display" data-execution_count="1">
+<div class="cell-output cell-output-display" data-execution_count="6">
 <pre><code>(   brand   id  satisfaction  trust  build  differs  easy  appealing  \
  0      1   98             3      1      0        1     1          1   
  1      1  179             5      0      0        0     0          0   
@@ -236,7 +234,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <p><strong>impact:</strong> Makes a difference in my life</p>
 <section id="pearson-correlations" class="level3">
 <h3 class="anchored" data-anchor-id="pearson-correlations">Pearson Correlations</h3>
-<div id="f2995ffe" class="cell" data-execution_count="2">
+<div id="ef54ff67" class="cell" data-execution_count="2">
 <div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> scipy.stats <span class="im">import</span> pearsonr</span>
 <span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Define the perception variables</span></span>
@@ -245,7 +243,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a><span class="co"># Calculate Pearson correlations for each perception with the satisfaction variable</span></span>
 <span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>pearson_correlations <span class="op">=</span> {var: pearsonr(data[var], data[<span class="st">'satisfaction'</span>])[<span class="dv">0</span>] <span class="cf">for</span> var <span class="kw">in</span> perception_variables}</span>
 <span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>pearson_correlations</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-display" data-execution_count="2">
+<div class="cell-output cell-output-display" data-execution_count="7">
 <pre><code>{'trust': 0.25570553126859225,
  'build': 0.19189574737779275,
  'differs': 0.18480092559442968,
@@ -273,7 +271,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <section id="linear-regression" class="level3">
 <h3 class="anchored" data-anchor-id="linear-regression">Linear Regression</h3>
 <p>To determine the standardized multiple regression coefficients for each variable</p>
-<div id="ddab408e" class="cell" data-execution_count="3">
+<div id="ed80fbde" class="cell" data-execution_count="3">
 <div class="sourceCode cell-code" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn.linear_model <span class="im">import</span> LinearRegression</span>
 <span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn.preprocessing <span class="im">import</span> StandardScaler</span>
 <span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a></span>
@@ -289,7 +287,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a><span class="co"># Get the standardized coefficients (beta values)</span></span>
 <span id="cb5-14"><a href="#cb5-14" aria-hidden="true" tabindex="-1"></a>standardized_coefficients <span class="op">=</span> <span class="bu">dict</span>(<span class="bu">zip</span>(perception_variables, model.coef_))</span>
 <span id="cb5-15"><a href="#cb5-15" aria-hidden="true" tabindex="-1"></a>standardized_coefficients</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-display" data-execution_count="3">
+<div class="cell-output cell-output-display" data-execution_count="8">
 <pre><code>{'trust': 0.11575180146935247,
  'build': 0.019979286014872366,
  'differs': 0.027847151777407392,
@@ -316,7 +314,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </section>
 <section id="johnsons-epsilon" class="level3">
 <h3 class="anchored" data-anchor-id="johnsons-epsilon">Johnson’s Epsilon</h3>
-<div id="94d83be8" class="cell" data-execution_count="4">
+<div id="44bea6c9" class="cell" data-execution_count="4">
 <div class="sourceCode cell-code" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
 <span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Calculate R-squared of the full model</span></span>
@@ -342,7 +340,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb7-23"><a href="#cb7-23" aria-hidden="true" tabindex="-1"></a>    johnsons_epsilon[var] <span class="op">=</span> epsilon</span>
 <span id="cb7-24"><a href="#cb7-24" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb7-25"><a href="#cb7-25" aria-hidden="true" tabindex="-1"></a>johnsons_epsilon</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-display" data-execution_count="4">
+<div class="cell-output cell-output-display" data-execution_count="9">
 <pre><code>{'trust': 0.008243096643170023,
  'build': 0.0002659202754856649,
  'differs': 0.0005503571557788911,
@@ -369,7 +367,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </section>
 <section id="mean-decrease-in-rf-gini-coefficient" class="level3">
 <h3 class="anchored" data-anchor-id="mean-decrease-in-rf-gini-coefficient">Mean Decrease in RF Gini Coefficient</h3>
-<div id="204c2f38" class="cell" data-execution_count="5">
+<div id="96541905" class="cell" data-execution_count="5">
 <div class="sourceCode cell-code" id="cb9"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn.ensemble <span class="im">import</span> RandomForestRegressor</span>
 <span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Fit a random forest model</span></span>
@@ -379,16 +377,16 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a><span class="co"># Extract feature importance based on mean decrease in impurity</span></span>
 <span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a>rf_feature_importance <span class="op">=</span> <span class="bu">dict</span>(<span class="bu">zip</span>(perception_variables, rf_model.feature_importances_))</span>
 <span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a>rf_feature_importance</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-display" data-execution_count="5">
-<pre><code>{'trust': 0.15442298419139613,
- 'build': 0.1004076639315038,
- 'differs': 0.08916535947441212,
- 'easy': 0.09981440343913897,
- 'appealing': 0.0842208474450039,
- 'rewarding': 0.1035420553265412,
- 'popular': 0.09476318971903136,
- 'service': 0.1286134715832872,
- 'impact': 0.14505002488968538}</code></pre>
+<div class="cell-output cell-output-display" data-execution_count="10">
+<pre><code>{'trust': 0.15442641629615117,
+ 'build': 0.09853823229478315,
+ 'differs': 0.09016443650056798,
+ 'easy': 0.09773223022184677,
+ 'appealing': 0.08596717903191624,
+ 'rewarding': 0.10387492423115462,
+ 'popular': 0.09319696296069226,
+ 'service': 0.14249476483434734,
+ 'impact': 0.1336048536285405}</code></pre>
 </div>
 </div>
 <p>The Mean Decrease in RF Gini Coefficient for each perception, derived from a Random Forest model, is as follows:</p>
@@ -489,11 +487,6 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </tr>
 </tbody>
 </table>
-</section>
-<section id="conclusion" class="level2">
-<h2 class="anchored" data-anchor-id="conclusion">Conclusion</h2>
-<p>The analysis highlights that perceptions related to trust in the brand, the impact of the card on the user’s life, and outstanding customer service are most strongly associated with customer satisfaction.</p>
-<p><em>If you want a challenge, either (1) implement one or more of the measures yourself. “Usefulness” is rather easy to program up. Shapley values for linear regression are a bit more work. Or (2) add additional measures to the table such as the importance scores from XGBoost.</em></p>
 
 
 </section>

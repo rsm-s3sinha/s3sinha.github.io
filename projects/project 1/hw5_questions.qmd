@@ -1,0 +1,211 @@
+---
+title: "Segmentation Methods"
+author: "Shefali Sinha"
+date: today
+---
+
+
+## K-Means
+
+```{python}
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+from sklearn.datasets import load_iris
+from sklearn.cluster import KMeans
+from sklearn.metrics import accuracy_score
+from sklearn.preprocessing import LabelEncoder
+
+# Load the Iris dataset
+iris_data = pd.read_csv('../../files/iris.csv')
+features = iris_data.iloc[:, :-1]  
+labels = iris_data.iloc[:, -1] 
+
+# Encode labels
+label_encoder = LabelEncoder()
+true_labels = label_encoder.fit_transform(labels)
+
+
+from sklearn.metrics import adjusted_rand_score, silhouette_score
+
+# Define the custom k-means class
+class CustomKMeans:
+    def __init__(self, n_clusters = 3, max_iter = 100, tol = 0.001):
+        self.n_clusters = n_clusters
+        self.max_iter = max_iter
+        self.tol = tol
+        self.centroids = {}
+    
+    def fit(self, data):
+       
+        self.centroids = {
+            i: data[np.random.randint(data.shape[0]), :]
+            for i in range(self.n_clusters)
+        }
+        
+        for i in range(self.max_iter):
+            self.classes_ = {j: [] for j in range(self.n_clusters)}
+            
+          
+            for idx, row in enumerate(data):
+                distances = [np.linalg.norm(row - self.centroids[centroid]) for centroid in self.centroids]
+                class_assignment = distances.index(min(distances))
+                self.classes_[class_assignment].append(idx)
+            
+            old_centroids = dict(self.centroids)
+            
+            # Update centroids to the mean of assigned points
+            for classification in self.classes_:
+                points_idx = self.classes_[classification]
+                new_centroid = np.mean(data[points_idx], axis=0)
+                self.centroids[classification] = new_centroid
+            
+            # Convergence check
+            optimal = True
+            for centroid in self.centroids:
+                if np.sum((self.centroids[centroid] - old_centroids[centroid]) / old_centroids[centroid] * 100.0) > self.tol:
+                    optimal = False
+            
+            if optimal:
+                break
+
+    def predict(self, data):
+        predictions = []
+        for row in data:
+            distances = [np.linalg.norm(row - self.centroids[centroid]) for centroid in self.centroids]
+            predictions.append(distances.index(min(distances)))
+        return predictions
+
+# Load and prepare data
+features = iris_data.iloc[:, :-1].values 
+
+# Instantiate and fit the custom k-means
+custom_kmeans = CustomKMeans()
+custom_kmeans.fit(features)
+
+# Predict clusters
+custom_clusters = custom_kmeans.predict(features)
+
+# Fit and predict using sklearn KMeans
+sk_kmeans = KMeans(n_clusters=3, random_state=0).fit(features)
+sk_labels = sk_kmeans.labels_
+
+# Visualize the clustering 
+plt.figure(figsize=(14, 6))
+
+plt.subplot(1, 2, 1)
+for cluster_id, points in custom_kmeans.classes_.items():
+    points = np.array([features[idx] for idx in points])
+    plt.scatter(points[:, 0], points[:, 1], label=f'Cluster {cluster_id}')
+plt.scatter([centroid[0] for centroid in custom_kmeans.centroids.values()],
+            [centroid[1] for centroid in custom_kmeans.centroids.values()], s = 300, c = 'red', label = 'Centroid', marker = 'X')
+plt.title('Custom K-Means Clustering')
+plt.xlabel('Feature 1')
+plt.ylabel('Feature 2')
+plt.legend()
+
+plt.subplot(1, 2, 2)
+plt.scatter(features[:, 0], features[:, 1], c = sk_labels, cmap = 'viridis')
+plt.scatter(sk_kmeans.cluster_centers_[:, 0], sk_kmeans.cluster_centers_[:, 1], s = 300, c = 'red', marker = 'X', label = 'Centroid')
+plt.title('Sklearn K-Means Clustering')
+plt.xlabel('Feature 1')
+plt.ylabel('Feature 2')
+plt.legend()
+
+plt.tight_layout()
+plt.show()
+
+# Calculate evaluation metrics
+ari_custom = adjusted_rand_score(true_labels, custom_clusters)
+ari_sklearn = adjusted_rand_score(true_labels, sk_labels)
+silhouette_custom = silhouette_score(features, custom_clusters)
+silhouette_sklearn = silhouette_score(features, sk_labels)
+
+(ari_custom, ari_sklearn), (silhouette_custom, silhouette_sklearn)
+
+```
+
+## Visualizations
+
+### Left Plot
+Shows the results from the custom k-means algorithm. The clusters are indicated by different colors, and the red "X" marks represent the centroids of these clusters.
+
+### Right Plot
+Displays the results from sklearn's KMeans method. Similar to the custom method, the clusters are colored, and the centroids are marked with red "X"s.
+
+## Evaluation Metrics
+
+Both algorithms performed identically in terms of the Adjusted Rand Index (ARI) and Silhouette Score:
+
+- **ARI**: Measures the similarity between the true labels and the clustering results. Both methods scored `0.7302`, indicating a high degree of similarity.
+- **Silhouette Score**: Measures how similar an object is to its own cluster compared to other clusters. Both methods scored `0.5528`, suggesting a reasonable cluster structure.
+
+These results demonstrate that the custom k-means implementation effectively mirrors the performance of sklearn's implementation. The identical metrics reflect that both algorithms have similarly partitioned the dataset into clusters, with each cluster being quite distinct from the others.
+
+## Conclusion
+
+The analysis confirms the efficacy of both custom and sklearn's k-means clustering algorithms in handling the Iris dataset, with both methods providing consistent and robust clustering results.
+
+
+```{python}
+from sklearn.metrics import silhouette_score
+from sklearn.cluster import KMeans
+
+# Range of K values
+K_range = range(2, 8)
+
+# Lists to store metrics for each K
+wcss = []
+silhouette_scores = []
+
+# Calculating metrics for each K
+for K in K_range:
+    kmeans = KMeans(n_clusters=K, random_state=0).fit(features)
+    wcss.append(kmeans.inertia_)  # Within-cluster sum of squares
+    silhouette_scores.append(silhouette_score(features, kmeans.labels_))  # Silhouette score
+
+# Plotting the results
+plt.figure(figsize=(14, 5))
+
+plt.subplot(1, 2, 1)
+plt.plot(K_range, wcss, marker='o')
+plt.title('WCSS vs. Number of Clusters')
+plt.xlabel('Number of Clusters (K)')
+plt.ylabel('Within-Cluster Sum of Squares (WCSS)')
+
+plt.subplot(1, 2, 2)
+plt.plot(K_range, silhouette_scores, marker='o', color='r')
+plt.title('Silhouette Score vs. Number of Clusters')
+plt.xlabel('Number of Clusters (K)')
+plt.ylabel('Silhouette Score')
+
+plt.tight_layout()
+plt.show()
+
+```
+
+## Plots Analysis
+
+### WCSS Plot
+
+The WCSS decreases as the number of clusters increases. There is a noticeable "elbow" around K = 3, suggesting that increasing the number of clusters beyond this point results in diminishing returns in terms of reducing the WCSS.
+
+### Silhouette Score Plot
+
+The Silhouette Score peaks at K = 2 and is also relatively high at K = 3, indicating good cluster separation and coherence. Beyond K = 3, the Silhouette Score generally declines, suggesting that the clusters become less distinct.
+
+## Suggested Number of Clusters
+
+Based on these metrics:
+- **Elbow Method**: The noticeable elbow around K = 3 in the WCSS plot suggests that this is a good choice for the number of clusters, due to the significant reduction in WCSS up to this point.
+- **Silhouette Score**: Peaks at K = 2 and is also quite good at K = 3. This supports the choice of K = 3 as a well-balanced number of clusters that optimizes both cluster density and separation.
+
+## Conclusion
+
+K = 3 is recommended as the optimal number of clusters for this dataset, aligning well with the known categorization of the Iris species into three types. This choice is substantiated by both the elbow method and Silhouette Scores, making it a robust selection for clustering the Iris data.
+
+
+
+
+
+

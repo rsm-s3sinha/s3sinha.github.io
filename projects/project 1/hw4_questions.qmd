@@ -183,12 +183,8 @@ The Mean Decrease in RF Gini Coefficient for each perception, derived from a Ran
 | Provides outstanding customer service   | 25.1                          | 8.8                                            | 0.47                                             | 13.3                                          |
 | Makes a difference in my life           | 25.5                          | 12.8                                           | 1.12                                             | 13.7                                          |
 
-## Conclusion
-
-The analysis highlights that perceptions related to trust in the brand, the impact of the card on the user’s life, and outstanding customer service are most strongly associated with customer satisfaction.
 
 
-_If you want a challenge, either (1) implement one or more of the measures yourself. "Usefulness" is rather easy to program up. Shapley values for linear regression are a bit more work. Or (2) add additional measures to the table such as the importance scores from XGBoost._
 
 
 
